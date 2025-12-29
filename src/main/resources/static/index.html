@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Item Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1e7e34;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: #eee;
+            margin: 8px 0;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete {
+            background: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Item Management</h1>
+
+<div class="container">
+    <input type="number" id="itemId" placeholder="Item ID">
+    <input type="text" id="itemName" placeholder="Item Name">
+    <button onclick="addItem()">Add Item</button>
+
+    <h3>All Items</h3>
+    <ul id="itemList"></ul>
+</div>
+
+<script>
+    const API_URL = "http://localhost:8080/items";
+
+    function loadItems() {
+        fetch(API_URL)
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById("itemList");
+                list.innerHTML = "";
+                data.forEach(item => {
+                    const li = document.createElement("li");
+                    li.innerHTML = `
+                        ${item.id} - ${item.name}
+                        <button class="delete" onclick="deleteItem(${item.id})">Delete</button>
+                    `;
+                    list.appendChild(li);
+                });
+            });
+    }
+
+    function addItem() {
+        const id = document.getElementById("itemId").value;
+        const name = document.getElementById("itemName").value;
+
+        fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                id: id,
+                name: name
+            })
+        }).then(() => {
+            loadItems();
+            document.getElementById("itemId").value = "";
+            document.getElementById("itemName").value = "";
+        });
+    }
+
+    function deleteItem(id) {
+        fetch(`${API_URL}/${id}`, {
+            method: "DELETE"
+        }).then(() => loadItems());
+    }
+
+    loadItems();
+</script>
+
+</body>
+</html>
